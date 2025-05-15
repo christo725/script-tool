@@ -2,7 +2,6 @@ import os
 from typing import Dict, Any
 import anthropic
 import openai
-from google.generativeai import GenerativeModel
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -12,6 +11,8 @@ load_dotenv()
 # Initialize API clients
 anthropic_client = anthropic.Anthropic(api_key=os.getenv('ANTHROPIC_API_KEY'))
 openai_client = openai.OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+# Configure Gemini
 genai.configure(api_key=os.getenv('GOOGLE_API_KEY'))
 
 def generate_prompt(settings: Dict[str, Any], article_text: str) -> str:
@@ -37,13 +38,18 @@ Writing Style:
 Additional Instructions:
 {settings['additional_instructions']}
 
-Please convert the following article into a video script following all the above guidelines. Format the output as a two-column script:
+Please convert the following article into a video script following all the above guidelines. Format the output as a markdown table with two columns using this exact format:
 
-Column 1 - NARRATION: Contains ONLY the exact words the narrator will speak, broken down line by line. Each line should be a natural speaking segment (about 1-2 sentences). Do not include any stage directions, transitions, or visual notes in this column.
+| NARRATION | VISUALS |
+|-----------|---------|
+| (narration text) | (visual description) |
 
-Column 2 - VISUALS: For each line of narration, describe the corresponding b-roll footage, graphics, or visual elements that should appear on screen while that line is being spoken. Be specific about the type of shot, graphics, or visual elements needed.
-
-Format the output as a markdown table with two columns: "NARRATION" and "VISUALS"
+Make sure:
+1. Include the header row and separator exactly as shown above
+2. Each cell should start with a space after the | for readability
+3. Don't include any text before or after the table
+4. Keep each row's content concise and clear
+5. Use proper markdown table syntax with | as column separators
 
 Here's the article to convert:
 
@@ -82,9 +88,18 @@ def generate_script(settings: Dict[str, Any], article_text: str) -> str:
             )
             return response.choices[0].message.content
             
-        elif settings['ai_model'] == "Gemini 2.5":
-            model = GenerativeModel('gemini-pro')
-            response = model.generate_content(prompt)
+        elif settings['ai_model'] == "Gemini Pro":
+            # Create a GenerativeModel instance with the correct model name
+            model = genai.GenerativeModel('models/gemini-1.5-pro-latest')
+            
+            # Generate content using the v1 API
+            response = model.generate_content(
+                contents=[{
+                    "parts": [{
+                        "text": prompt
+                    }]
+                }]
+            )
             return response.text
             
         else:

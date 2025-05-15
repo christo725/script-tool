@@ -26,7 +26,7 @@ VIDEO_TYPE_DEFAULTS = {
         "tone": "Casual",
         "length": 0.3,
         "density": 0.3,
-        "ai_model": "GPT 4o",
+        "ai_model": "Gemini Pro",
         "language": "English (US)",
         "geo_background": "U.S.",
         "similar_to": "Social Media Influencer",
@@ -36,7 +36,7 @@ VIDEO_TYPE_DEFAULTS = {
         "economic": "Balanced",
         "social": "Balanced",
         "custom_dataset": False,
-        "additional_instructions": "Use attention-grabbing first 3 seconds. Include trending sounds/music cues in [brackets]. Keep sentences under 10 words. Use Gen Z slang where appropriate. End with call to action."
+        "additional_instructions": "Use attention-grabbing first 3 seconds. Keep sentences under 10 words."
     },
     "Opinion": {
         "tone": "Conversational",
@@ -98,8 +98,8 @@ with col2:
     make_label("AI Model")
     ai_model = st.selectbox(
         "",
-        ["Claude 3.7", "Gemini 2.5", "GPT 4o"],
-        index=["Claude 3.7", "Gemini 2.5", "GPT 4o"].index(st.session_state.current_settings["ai_model"]),
+        ["Claude 3.7", "GPT 4o", "Gemini Pro"],
+        index=["Claude 3.7", "GPT 4o", "Gemini Pro"].index(st.session_state.current_settings["ai_model"]),
         key="ai_model"
     )
 
@@ -291,9 +291,15 @@ if submit_button and article_text:
 
 # Output script section
 st.markdown("### Output Script")
-script_output = st.text_area(
-    "",
-    value=st.session_state.get('script_output', ''),
-    height=400,
-    key="script_output_display"
-)
+
+# Display the script as a markdown table
+if 'script_output' in st.session_state:
+    st.markdown(st.session_state.script_output)
+    
+    # Add download button for the script
+    st.download_button(
+        label="Download Script",
+        data=st.session_state.script_output,
+        file_name="video_script.md",
+        mime="text/markdown"
+    )
